@@ -2,20 +2,22 @@ require "logstash/filters/base"
 require "logstash/namespace"
 
 # The throttle filter is for throttling the number of events received. The filter
-# is configured with a lower bound, the before_count, and upper bound, the after_count,
+# is configured with a lower bound, the `before_count`, and upper bound, the `after_count`,
 # and a period of time. All events passing through the filter will be counted based on 
-# a key. As long as the count is less than the before_count or greater than the 
-# after_count, the event will be "throttled" which means the filter will be considered 
+# a key. As long as the count is less than the `before_count` or greater than the 
+# `after_count`, the event will be "throttled" which means the filter will be considered 
 # successful and any tags or fields will be added.
 #
 # For example, if you wanted to throttle events so you only receive an event after 2 
 # occurrences and you get no more than 3 in 10 minutes, you would use the 
 # configuration:
+# [source,ruby]
 #     period => 600
 #     before_count => 3
 #     after_count => 5
 #
 # Which would result in:
+# [source,ruby]
 #     event 1 - throttled (successful filter, period start)
 #     event 2 - throttled (successful filter)
 #     event 3 - not throttled
@@ -35,11 +37,13 @@ require "logstash/namespace"
 # 
 # Another example is if you wanted to throttle events so you only receive 1 event per 
 # hour, you would use the configuration:
+# [source,ruby]
 #     period => 3600
 #     before_count => -1
 #     after_count => 1
 #
 # Which would result in:
+# [source,ruby]
 #     event 1 - not throttled (period start)
 #     event 2 - throttled (successful filter)
 #     event 3 - throttled (successful filter)
@@ -55,7 +59,7 @@ require "logstash/namespace"
 # A common use case would be to use the throttle filter to throttle events before 3 and 
 # after 5 while using multiple fields for the key and then use the drop filter to remove 
 # throttled events. This configuration might appear as:
-# 
+# [source,ruby]
 #     filter {
 #       throttle {
 #         before_count => 3
@@ -72,7 +76,7 @@ require "logstash/namespace"
 # Another case would be to store all events, but only email non-throttled 
 # events so the op's inbox isn't flooded with emails in the event of a system error. 
 # This configuration might appear as:
-#
+# [source,ruby]
 #     filter {
 #       throttle {
 #         before_count => 3

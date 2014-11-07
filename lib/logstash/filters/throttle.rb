@@ -17,7 +17,7 @@ require "logstash/namespace"
 #     after_count => 5
 #
 # Which would result in:
-# [source,ruby]
+# ==========================
 #     event 1 - throttled (successful filter, period start)
 #     event 2 - throttled (successful filter)
 #     event 3 - not throttled
@@ -34,7 +34,7 @@ require "logstash/namespace"
 #     event 5 - not throttled
 #     event 6 - throttled (successful filter)
 #     ...
-# 
+# ==========================
 # Another example is if you wanted to throttle events so you only receive 1 event per 
 # hour, you would use the configuration:
 # [source,ruby]
@@ -43,7 +43,7 @@ require "logstash/namespace"
 #     after_count => 1
 #
 # Which would result in:
-# [source,ruby]
+# ==========================
 #     event 1 - not throttled (period start)
 #     event 2 - throttled (successful filter)
 #     event 3 - throttled (successful filter)
@@ -55,7 +55,7 @@ require "logstash/namespace"
 #     event 3 - throttled (successful filter)
 #     event 4 - throttled (successful filter)
 #     ...
-# 
+# ==========================
 # A common use case would be to use the throttle filter to throttle events before 3 and 
 # after 5 while using multiple fields for the key and then use the drop filter to remove 
 # throttled events. This configuration might appear as:

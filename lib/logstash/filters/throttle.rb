@@ -114,8 +114,6 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   # The name to use in configuration files.
   config_name "throttle"
 
-  # New plugins should start life at milestone 1.
-  milestone 1
 
   # The key used to identify events. Events with the same key will be throttled
   # as a group.  Field substitutions are allowed, so you can combine multiple

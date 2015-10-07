@@ -158,7 +158,7 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   def filter(event)
       	  
     # Return nothing unless there's an actual filter event
-    return unless filter?(event)
+    
     	  
     now = Time.now
     key = event.sprintf(@key)

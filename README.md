@@ -1,7 +1,6 @@
 # Logstash Plugin
 
-[![Build
-Status](http://build-eu-00.elastic.co/view/LS%20Plugins/view/LS%20Filters/job/logstash-plugin-filter-throttle-unit/badge/icon)](http://build-eu-00.elastic.co/view/LS%20Plugins/view/LS%20Filters/job/logstash-plugin-filter-throttle-unit/)
+[![Travis Build Status](https://travis-ci.org/logstash-plugins/logstash-filter-throttle.svg)](https://travis-ci.org/logstash-plugins/logstash-filter-throttle)
 
 This is a plugin for [Logstash](https://github.com/elastic/logstash).
 

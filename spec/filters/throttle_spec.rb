@@ -20,7 +20,7 @@ describe LogStash::Filters::Throttle do
     }
 
     sample event do
-      insist { subject["tags"] } == nil
+      insist { subject.get("tags") } == nil
     end
   end
   
@@ -42,7 +42,7 @@ describe LogStash::Filters::Throttle do
     }
 
     sample event do
-      insist { subject["tags"] } == [ "throttled" ]
+      insist { subject.get("tags") } == [ "throttled" ]
     end
   end
   
@@ -66,8 +66,8 @@ describe LogStash::Filters::Throttle do
     }]
 
     sample events do
-      insist { subject[0]["tags"] } == [ "throttled" ]
-      insist { subject[1]["tags"] } == nil
+      insist { subject[0].get("tags") } == [ "throttled" ]
+      insist { subject[1].get("tags") } == nil
     end
   end
   
@@ -95,10 +95,10 @@ describe LogStash::Filters::Throttle do
     }]
 
     sample events do
-      insist { subject[0]["tags"] } == [ "throttled" ]
-      insist { subject[1]["tags"] } == nil
-      insist { subject[2]["tags"] } == nil
-      insist { subject[3]["tags"] } == [ "throttled" ]
+      insist { subject[0].get("tags") } == [ "throttled" ]
+      insist { subject[1].get("tags") } == nil
+      insist { subject[2].get("tags") } == nil
+      insist { subject[3].get("tags") } == [ "throttled" ]
     end
   end
   
@@ -126,7 +126,7 @@ describe LogStash::Filters::Throttle do
 
     sample events do
       subject.each { | s |
-        insist { s["tags"] } == nil
+        insist { s.get("tags") } == nil
       }
     end
   end
@@ -159,7 +159,7 @@ describe LogStash::Filters::Throttle do
 
     sample events do
       subject.each { | s |
-        insist { s["tags"] } == nil
+        insist { s.get("tags") } == nil
       }
     end
   end
@@ -188,7 +188,7 @@ describe LogStash::Filters::Throttle do
     }]
 
     sample events do
-      insist { subject[3]["tags"] } == nil
+      insist { subject[3].get("tags") } == nil
     end
   end
 

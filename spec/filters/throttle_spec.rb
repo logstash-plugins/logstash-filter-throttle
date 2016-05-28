@@ -163,14 +163,13 @@ describe LogStash::Filters::Throttle do
       }
     end
   end
-  
-  describe "max_counter exceeded" do
+
+  describe "correct timeslot assigned/calculated, after_count exceeded" do
     config <<-CONFIG
       filter {
         throttle {
           period => 60
           after_count => 1
-          max_counters => 2
           key => "%{message}"
           add_tag => [ "throttled" ]
         }
@@ -178,19 +177,67 @@ describe LogStash::Filters::Throttle do
     CONFIG
 
     events = [{
-      "message" => "foo"
+      "@timestamp" => "2016-07-09T00:05:00.000Z",
+      "message"    => "server1"
     }, {
-      "message" => "bar"
+      "@timestamp" => "2016-07-09T00:05:59.000Z",
+      "message"    => "server1"
     }, {
-      "message" => "poo"
+      "@timestamp" => "2016-07-09T00:10:33.000Z",
+      "message"    => "server1"
     }, {
-      "message" => "foo"
+      "@timestamp" => "2016-07-09T00:10:34.000Z",
+      "message"    => "server1"
+    }, {
+      "@timestamp" => "2016-07-09T00:00:00.000Z",
+      "message"    => "server1"
+    }, {
+      "@timestamp" => "2016-07-09T00:00:45.000Z",
+      "message"    => "server1"
     }]
 
     sample events do
-      insist { subject[3].get("tags") } == nil
+      insist { subject[0].get("tags") } == nil
+      insist { subject[1].get("tags") } == [ "throttled" ]
+      insist { subject[2].get("tags") } == nil
+      insist { subject[3].get("tags") } == [ "throttled" ]
+      insist { subject[4].get("tags") } == nil
+      insist { subject[5].get("tags") } == [ "throttled" ]
+    end
+  end
+
+  describe "asynchronous input, after_count exceeded" do
+    config <<-CONFIG
+      filter {
+        throttle {
+          period => 60
+          after_count => 1
+          key => "%{message}"
+          add_tag => [ "throttled" ]
+        }
+      }
+    CONFIG
+
+    events = [{
+      "@timestamp" => "2016-07-09T00:01:00.000Z",
+      "message"    => "server1"
+    }, {
+      "@timestamp" => "2016-07-09T00:00:30.000Z",
+      "message"    => "server1"
+    }, {
+      "@timestamp" => "2016-07-09T00:01:59.000Z",
+      "message"    => "server1"
+    }, {
+      "@timestamp" => "2016-07-09T00:00:59.000Z",
+      "message"    => "server1"
+    }]
+
+    sample events do
+      insist { subject[0].get("tags") } == nil
+      insist { subject[1].get("tags") } == nil
+      insist { subject[2].get("tags") } == [ "throttled" ]
+      insist { subject[3].get("tags") } == [ "throttled" ]
     end
   end
 
 end # LogStash::Filters::Throttle
-

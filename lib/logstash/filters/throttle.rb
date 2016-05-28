@@ -1,5 +1,7 @@
 require "logstash/filters/base"
 require "logstash/namespace"
+require "thread_safe"
+require "atomic"
 
 # The throttle filter is for throttling the number of events.  The filter is
 # configured with a lower bound, the "before_count", and upper bound, the "after_count",
@@ -212,9 +214,6 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   # performs initialization of the filter
   public
   def register
-    require "thread_safe"
-    require "atomic"
-
     @key_cache = ThreadSafe::Cache.new
     @max_age_orig = @max_age
   end # def register

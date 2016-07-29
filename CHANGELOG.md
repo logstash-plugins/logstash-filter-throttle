@@ -1,3 +1,7 @@
+## 4.0.0
+  - Full reimplementation of the plugin. The plugin is now thread-safe and properly tracks past events.
+  - Updated tests and added runtime dependencies
+
 ## 3.0.2
   - Relax constraint on logstash-core-plugin-api to >= 1.60 <= 2.99
 

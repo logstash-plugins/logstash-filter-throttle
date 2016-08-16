@@ -221,27 +221,38 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   # filters the event
   public
   def filter(event)
-    key = event.sprintf(@key)                # substitute field
-    period = event.sprintf(@period).to_i     # substitute period
-    period = 60 if period == 0               # fallback if unparsable
-    epoch = event.timestamp.to_i             # event epoch time
+    key = event.sprintf(@key)                 # substitute field
+    period = event.sprintf(@period).to_i      # substitute period
+    period = 60 if period == 0                # fallback if unparsable
+    epoch = event.timestamp.to_i              # event epoch time
 
-    @key_cache.compute_if_absent(key) do     # initialise timeslot cache
-      ThreadSafe::TimeslotCache.new(epoch)   # and add to key cache
+    while true
+      # initialise timeslot cache (if required)
+      @key_cache.compute_if_absent(key) { ThreadSafe::TimeslotCache.new(epoch) }
+      timeslot_cache = @key_cache[key]        # try to get timeslot cache
+      break unless timeslot_cache.nil?        # retry until succesful
+
+      @logger.warn? and @logger.warn(
+        "filters/#{self.class.name}: timeslot cache disappeared, increase max_counters to prevent this.")
     end
 
-    timeslot_cache = @key_cache[key]         # get timeslot cache
-    timeslot_cache.latest = epoch            # update to latest epoch
+    timeslot_cache.latest = epoch             # update to latest epoch
 
     # find target timeslot
     timeslot_key = epoch - (epoch - timeslot_cache.created) % period
 
-    # initialise timeslot and counter (if required)
-    timeslot_cache.compute_if_absent(timeslot_key) { Atomic.new(0) }
+    while true
+      # initialise timeslot and counter (if required)
+      timeslot_cache.compute_if_absent(timeslot_key) { Atomic.new(0) }
+      timeslot = timeslot_cache[timeslot_key] # try to get timeslot
+      break unless timeslot.nil?              # retry until succesful
 
-    timeslot = timeslot_cache[timeslot_key]  # get timeslot
-    timeslot.update { |v| v + 1 }            # increment counter
-    count = timeslot.value                   # get latest counter value
+      @logger.warn? and @logger.warn(
+        "filters/#{self.class.name}: timeslot disappeared, increase max_age to prevent this.")
+    end
+      
+    timeslot.update { |v| v + 1 }             # increment counter
+    count = timeslot.value                    # get latest counter value
 
     @logger.debug? and @logger.debug(
       "filters/#{self.class.name}: counter incremented",
@@ -267,13 +278,13 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
 
   public
   def flush(options = {})
-    max_latest = 0                           # get maximum epoch
+    max_latest = 0                            # get maximum epoch
     @key_cache.each_value { |tc| max_latest = tc.latest if tc.latest > max_latest }
 
     total_counters = 0
     @key_cache.each_pair do |key,timeslot_cache|
       if timeslot_cache.latest < max_latest - @max_age
-        @key_cache.delete(key)               # delete expired timeslot cache
+        @key_cache.delete(key)                # delete expired timeslot cache
       else
         total_counters += timeslot_cache.size # get total number of counters
       end

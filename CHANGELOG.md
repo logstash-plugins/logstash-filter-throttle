@@ -1,3 +1,6 @@
+## 4.0.1
+  - fix racing condition that causes logstash to crash under heavy load conditions
+
 ## 4.0.0
   - Full reimplementation of the plugin. The plugin is now thread-safe and properly tracks past events.
   - Updated tests and added runtime dependencies
@@ -21,4 +24,3 @@
  - internal: Plugins were updated to follow the new shutdown semantic, this mainly allows Logstash to instruct input plugins to terminate gracefully, 
    instead of using Thread.raise on the plugins' threads. Ref: https://github.com/elastic/logstash/pull/3895
  - internal,deps: Dependency on logstash-core update to 2.0
-

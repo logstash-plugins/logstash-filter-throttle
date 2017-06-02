@@ -1,7 +1,8 @@
 require "logstash/filters/base"
 require "logstash/namespace"
 require "thread_safe"
-require "atomic"
+require "concurrent/atomics"
+require "concurrent"
 
 # The throttle filter is for throttling the number of events.  The filter is
 # configured with a lower bound, the "before_count", and upper bound, the "after_count",
@@ -143,12 +144,12 @@ require "atomic"
 # Mike Pilone (@mikepilone)
 #
 
-class ThreadSafe::TimeslotCache < ThreadSafe::Cache
+class Concurrent::TimeslotCache < Concurrent::Map
   attr_reader :created
 
   def initialize(epoch, options = nil, &block)
     @created = epoch
-    @latest = Atomic.new(epoch)
+    @latest = Concurrent::AtomicFixnum.new(epoch)
 
     super(options, &block)
   end
@@ -214,7 +215,7 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
   # performs initialization of the filter
   public
   def register
-    @key_cache = ThreadSafe::Cache.new
+    @key_cache = Concurrent::Map.new
     @max_age_orig = @max_age
   end # def register
 
@@ -228,7 +229,7 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
 
     while true
       # initialise timeslot cache (if required)
-      @key_cache.compute_if_absent(key) { ThreadSafe::TimeslotCache.new(epoch) }
+      @key_cache.compute_if_absent(key) { Concurrent::TimeslotCache.new(epoch) }
       timeslot_cache = @key_cache[key]        # try to get timeslot cache
       break unless timeslot_cache.nil?        # retry until succesful
 
@@ -243,14 +244,14 @@ class LogStash::Filters::Throttle < LogStash::Filters::Base
 
     while true
       # initialise timeslot and counter (if required)
-      timeslot_cache.compute_if_absent(timeslot_key) { Atomic.new(0) }
+      timeslot_cache.compute_if_absent(timeslot_key) { Concurrent::AtomicFixnum.new(0) }
       timeslot = timeslot_cache[timeslot_key] # try to get timeslot
       break unless timeslot.nil?              # retry until succesful
 
       @logger.warn? and @logger.warn(
         "filters/#{self.class.name}: timeslot disappeared, increase max_age to prevent this.")
     end
-      
+
     timeslot.update { |v| v + 1 }             # increment counter
     count = timeslot.value                    # get latest counter value
 

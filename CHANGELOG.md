@@ -1,3 +1,6 @@
+## 4.0.3
+  - Fix some documentation issues
+
 ## 4.0.1
   - fix racing condition that causes logstash to crash under heavy load conditions
 

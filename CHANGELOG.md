@@ -1,3 +1,6 @@
+## 4.0.5
+  - [DOC] Repair graphic that illustrates age calculation [#23](https://github.com/logstash-plugins/logstash-filter-throttle/pull/23)
+
 ## 4.0.4
   - Update gemspec summary
 

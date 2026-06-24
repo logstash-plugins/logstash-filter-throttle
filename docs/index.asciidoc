@@ -121,9 +121,10 @@ This configuration might appear as:
           options => { "location" => "/usr/sbin/sendmail" }
         }
       }
-      elasticsearch_http {
+      elasticsearch {
+        index => "indexed_logs"
         host => "localhost"
-        port => "19200"
+        port => "9200"
       }
     }
 
